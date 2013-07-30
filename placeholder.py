@@ -1,0 +1,138 @@
+#!/usr/bin/env python
+
+"""
+    Image Placeholder Server
+    Created By Arielle B Cruz <http://www.abcruz.com> <arielle.cruz@gmail.com>
+    Dedicated to the Public Domain on January 2013.
+    Updated by Mark Lintern
+    
+    Description:
+        Inspired by http://placehold.it. Generates placeholder images for web
+        pages in development but does not require an active Internet connection.
+        
+        Requires the Python Imaging Library.
+    
+    Usage:
+        Run this script in a terminal.
+        
+        Point browser or link HTML to http://localhost:5000/(width)x(height)
+              or http://localhost:5000/(width)x(height)/(colour hex code)
+    
+    Credits:
+        http://lost-theory.org/python/dynamicimg.html
+        
+    Updates my Mark: 
+     - Allows Single size variable and will assume Square
+     - Updated Font and Size to Handlee and 25px
+     - Allow secondary color for Font Color
+     - allow text=[ what you want it to say] as a URL variable
+"""
+
+from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
+import Image, ImageDraw, ImageFont
+import cStringIO
+
+server_port = 8888
+default_size = (100, 100)
+default_color = "#CCCCCC"
+
+class MyHandler(BaseHTTPRequestHandler):
+    
+    #def __init__(self):
+	#	self.text = ''
+    
+    def do_GET(self):
+    	self.text = ''
+    	self.text_color = '#000000'
+        # Check the requested path.
+        self.check_path()
+        # Create the image.
+        self.create_image()
+        # Start responding.
+        self.respond()
+    
+    def check_path(self):
+    	#Check for Variables in the URL        
+        variables = self.path.split("?")
+        if len(variables) > 1:
+        	total = variables[1].split("&")
+        	for x in range(0, len(total)):
+        		current = total[x].split("=")
+        		if current[0].lower() == 'text':
+        			self.text = current[1].replace("%20"," ")
+        			print self.text
+        
+        #Split the URI
+        path = variables[0].split("/")[1:]
+        self.img_color = default_color
+        self.img_size = default_size
+        
+        # Get the size, that's required any way.
+        size = path[0].split("x")
+        if len(size) == 1:
+            if size[0].isdigit():
+                self.img_size = (int(size[0]), int(size[0]))
+        if len(size) == 2:
+            if size[0].isdigit() and size[1].isdigit():
+                self.img_size = (int(size[0]), int(size[1]))
+        
+        # If we have a second component, that should be the color.
+        if len(path) > 1:
+            bc = [x for x in path[1] if x in "0123456789aAbBcCdDeEfF"]
+            if len(bc) == 6 or len(bc) == 3:
+                self.img_color = "#" + "".join(bc)
+        if len(path) > 2:
+            fc = [x for x in path[2] if x in "0123456789aAbBcCdDeEfF"]
+            if len(fc) == 6 or len(fc) == 3:
+                self.text_color = "#" + "".join(fc)
+    	
+    def create_image(self):
+        
+        # The image to be sent out.
+        self.img = Image.new("RGB", self.img_size, self.img_color)
+        
+        # Add the dimensions of the requested image to the image itself.
+        img = Image.new("RGB", (10, 10), self.img_color)
+        draw = ImageDraw.Draw(img)
+        note25 = ImageFont.truetype('Handlee-Regular.ttf', 25)
+        if len(self.text) > 0:
+        	txw, txh = draw.textsize(self.text, font=note25)
+        else:
+        	txw, txh = draw.textsize(str(self.img_size), font=note25)
+        
+        """ print self.img_size
+        txw = int(self.img_size[0]/2)
+        txh = int(self.img_size[1]/2)
+        print txw
+        print txh """
+        
+        new_img = img.resize((txw, txh))
+        draw = ImageDraw.Draw(new_img)
+        if len(self.text) > 0:
+        	draw.text((0, 0), self.text, fill=self.text_color, font=note25)
+        else:
+        	draw.text((0, 0), str(self.img_size), fill=self.text_color, font=note25)
+        pos = ((self.img_size[0]-txw) / 2, (self.img_size[1]-txh) / 2)
+        print pos
+        self.img.paste(new_img, pos)
+    
+    def respond(self):
+        self.send_response(200)
+        self.send_header("Content-Type", "image/png")
+        self.end_headers()
+        # Save the image to a temporary file-like object.
+        f = cStringIO.StringIO()
+        self.img.save(f, "PNG")
+        f.seek(0)
+        self.wfile.write(f.read())
+
+if __name__ == "__main__":
+    
+    try:
+        server = HTTPServer(("", server_port), MyHandler)
+        print "Simple HTTP server started."
+        server.serve_forever()
+    
+    except KeyboardInterrupt:
+        print "\nInterrupted. Goodbye."
+        server.socket.close()
