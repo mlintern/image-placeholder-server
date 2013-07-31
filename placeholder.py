@@ -25,7 +25,8 @@
      - Allows Single size variable and will assume Square
      - Updated Font and Size to Handlee and 25px
      - Allow secondary color for Font Color
-     - allow text=[ what you want it to say] as a URL variable
+     - Allow text=[ what you want it to say] as a URL variable
+     - Centered the Text on the Image
 """
 
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
@@ -37,9 +38,6 @@ default_size = (100, 100)
 default_color = "#CCCCCC"
 
 class MyHandler(BaseHTTPRequestHandler):
-    
-    #def __init__(self):
-	#	self.text = ''
     
     def do_GET(self):
     	self.text = ''
