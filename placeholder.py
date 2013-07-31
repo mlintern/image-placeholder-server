@@ -58,7 +58,7 @@ class MyHandler(BaseHTTPRequestHandler):
         		current = total[x].split("=")
         		if current[0].lower() == 'text':
         			self.text = current[1].replace("%20"," ")
-        			print self.text
+        			#print self.text
         
         #Split the URI
         path = variables[0].split("/")[1:]
@@ -98,12 +98,6 @@ class MyHandler(BaseHTTPRequestHandler):
         else:
         	txw, txh = draw.textsize(str(self.img_size), font=note25)
         
-        """ print self.img_size
-        txw = int(self.img_size[0]/2)
-        txh = int(self.img_size[1]/2)
-        print txw
-        print txh """
-        
         new_img = img.resize((txw, txh))
         draw = ImageDraw.Draw(new_img)
         if len(self.text) > 0:
@@ -111,7 +105,7 @@ class MyHandler(BaseHTTPRequestHandler):
         else:
         	draw.text((0, 0), str(self.img_size), fill=self.text_color, font=note25)
         pos = ((self.img_size[0]-txw) / 2, (self.img_size[1]-txh) / 2)
-        print pos
+        #print pos
         self.img.paste(new_img, pos)
     
     def respond(self):
