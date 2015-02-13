@@ -16,12 +16,12 @@
         Run this script in a terminal.
         
         Point browser or link HTML to http://localhost:5000/(width)x(height)
-              or http://localhost:5000/(width)x(height)/(colour hex code)
+              or http://localhost:5000/(width)x(height)/(color hex code)
     
     Credits:
         http://lost-theory.org/python/dynamicimg.html
         
-    Updates my Mark: 
+    Updates by Mark: 
      - Allows Single size variable and will assume Square
      - Updated Font and Size to Handlee and 25px
      - Allow secondary color for Font Color
